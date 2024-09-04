@@ -189,11 +189,11 @@ public class GamePanel extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         player.spawn(g);
-        if (isMultiplayer) remotePlayer.spawn(g);
+//        if (isMultiplayer) remotePlayer.spawn(g);
         enemies.forEach(e -> e.spawn(g));
         Iterator<Enemy> enemyIterator = enemies.iterator();
         handleBulletCollisions(g, enemyIterator, player);
-        if (isMultiplayer) handleBulletCollisions(g, enemyIterator, remotePlayer);
+//        if (isMultiplayer) handleBulletCollisions(g, enemyIterator, remotePlayer);
         reloadAlertLabel.setBounds((getWidth() - 400) / 2, getHeight() / 4, 400, 50);
     }
 
@@ -211,7 +211,7 @@ public class GamePanel extends JPanel {
             Iterator<Bullet> bulletIterator = player.getBullets().iterator();
             while (bulletIterator.hasNext()) {
                 Bullet bullet = bulletIterator.next();
-                if (CollisionUtils.rayTraceCollision(enemy, bullet)) {
+                if (CollisionUtils.checkSweptAABBCollision(enemy, bullet)) {
                     enemy.takeDamage(bullet.getDAMAGE());
                     bulletIterator.remove();
                     break;  // Break after collision to avoid multiple hits from same bullet
