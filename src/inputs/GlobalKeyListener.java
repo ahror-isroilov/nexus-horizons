@@ -1,6 +1,5 @@
 package inputs;
 
-import components.HelpDialog;
 import components.ShowPlanets;
 import main.Game;
 
@@ -21,7 +20,6 @@ public class GlobalKeyListener implements KeyEventDispatcher {
 
     private void handleKeyPress(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_Q) Game.getInstance().showHomePanel();
-        if (e.getKeyCode() == KeyEvent.VK_H) HelpDialog.getInstance().showDialog();
         if (e.getKeyCode() == KeyEvent.VK_P) ShowPlanets.getInstance().showDialog();
     }
 

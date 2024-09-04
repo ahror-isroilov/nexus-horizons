@@ -3,9 +3,12 @@ package main;
 import inputs.KeyboardInputs;
 import inputs.MouseInputs;
 import lombok.Getter;
+import lombok.Setter;
 import main.entity.Bullet;
 import main.entity.Enemy;
 import main.entity.Player;
+import multiplayer.EnemyState;
+import multiplayer.GameState;
 import utils.AudioUtils;
 import utils.CollisionUtils;
 import utils.Const;
@@ -17,6 +20,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * author: ahror
@@ -26,6 +30,7 @@ import java.util.List;
 @Getter
 public class GamePanel extends JPanel {
     private Player player;
+    private Player remotePlayer;
     private final List<Enemy> enemies = new ArrayList<>();
 
     private JLabel bulletCount;
@@ -39,6 +44,9 @@ public class GamePanel extends JPanel {
 
     private static final int ENEMY_COUNT = 10;
     private static final int TIMER_DELAY = 32;
+
+    private boolean isMultiplayer;
+    @Setter private boolean isHost;
 
     public GamePanel() {
         initializePanelProperties();
@@ -101,7 +109,7 @@ public class GamePanel extends JPanel {
 
     private void spawnEnemies() {
         if (enemies.isEmpty()) for (int i = 0; i < ENEMY_COUNT; i++) {
-            enemies.add(new Enemy());
+            enemies.add(new Enemy(UUID.randomUUID()));
         }
     }
 
@@ -143,12 +151,53 @@ public class GamePanel extends JPanel {
         reloadAlertLabel.setForeground(new Color(1f, 0f, 0f, Math.max(0.0f, Math.min(1.0f, alertOpacity))));
     }
 
+    //multiplayer methods
+
+    public void setMultiplayerMode(boolean isMultiplayer, boolean isHost) {
+        this.isMultiplayer = isMultiplayer;
+        this.isHost = isHost;
+        if (isMultiplayer) {
+            remotePlayer = new Player(Const.diameter, Color.RED, 2); // Different color for remote player
+        }
+    }
+
+    public void updateFromGameState(GameState state) {
+        if (isHost) {
+            remotePlayer.updateFromPlayerState(state.getPlayer2());
+        } else {
+            remotePlayer.updateFromPlayerState(state.getPlayer1());
+            player.updateFromPlayerState(state.getPlayer2());
+        }
+        updateEnemiesFromState(state.getEnemies());
+    }
+
+    private void updateEnemiesFromState(List<EnemyState> enemyStates) {
+        enemies.removeIf(enemy -> enemyStates.stream().noneMatch(state -> state.getId() == enemy.getId()));
+
+        for (EnemyState state : enemyStates) {
+            Enemy enemy = enemies.stream().filter(e -> e.getId() == state.getId()).findFirst().orElseGet(() -> {
+                Enemy newEnemy = new Enemy(state.getId());
+                enemies.add(newEnemy);
+                return newEnemy;
+            });
+
+            enemy.updateFromEnemyState(state);
+        }
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         player.spawn(g);
+        if (isMultiplayer) remotePlayer.spawn(g);
         enemies.forEach(e -> e.spawn(g));
         Iterator<Enemy> enemyIterator = enemies.iterator();
+        handleBulletCollisions(g, enemyIterator, player);
+        if (isMultiplayer) handleBulletCollisions(g, enemyIterator, remotePlayer);
+        reloadAlertLabel.setBounds((getWidth() - 400) / 2, getHeight() / 4, 400, 50);
+    }
+
+    private void handleBulletCollisions(Graphics g, Iterator<Enemy> enemyIterator, Player player) {
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
             enemy.spawn(g);
@@ -169,7 +218,12 @@ public class GamePanel extends JPanel {
                 }
             }
         }
-        reloadAlertLabel.setBounds((getWidth() - 400) / 2, getHeight() / 4, 400, 50);
+    }
+
+    public GameState createGameState() {
+        return new GameState(player.createState(),
+                remotePlayer!=null?remotePlayer.createState():null,
+                enemies.stream().map(Enemy::createState).toList());
     }
 
     @Override

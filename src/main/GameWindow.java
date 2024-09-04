@@ -6,6 +6,8 @@ import utils.Const;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * author: ahror
@@ -20,53 +22,48 @@ public class GameWindow extends JFrame {
     @Getter
     private static int screenHeight = Const.screenHeight;
 
-
-    private final int defaultWidth;
-    private final int defaultHeight;
-
     public GameWindow(String title) {
         super(title);
         setLayout(new BorderLayout());
         setBackground(Const.background);
 
-        defaultWidth = Const.screenWidth;
-        defaultHeight = Const.screenHeight;
-
         setSize(new Dimension(Const.screenWidth, Const.screenHeight));
         setMinimumSize(new Dimension(Const.screenWidth / 2, Const.screenHeight / 2));
         setLocationRelativeTo(null);
-
+        addWindowClosingEvent();
         setResizable(false);
     }
 
+    private void addWindowClosingEvent() {
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+    }
+
     public void maximizeWindow() {
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice device = env.getDefaultScreenDevice();
-        Rectangle bounds = device.getDefaultConfiguration().getBounds();
-
-        setResizable(true);
-
-//        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setSize(new Dimension(1080, 720));
-//        setSize(bounds.width, bounds.height);
+//        setResizable(true);
+        int gameWidth = 1200;
+        int gameHeight = 800;
+        setSize(new Dimension(gameWidth, gameHeight));
         setLocationRelativeTo(null);
+//        setResizable(false);
 
-        screenWidth = bounds.width;
-        screenHeight = bounds.height;
-
-        setResizable(false);
+        GameWindow.setScreenWidth(gameWidth);
+        GameWindow.setScreenHeight(gameHeight);
     }
 
     public void restoreDefaultSize() {
         setResizable(true);
 
         setExtendedState(JFrame.NORMAL);
-        setSize(new Dimension(defaultWidth, defaultHeight));
+        setSize(new Dimension(screenWidth, screenHeight));
         setLocationRelativeTo(null);
-
-        screenWidth = defaultWidth;
-        screenHeight = defaultHeight;
-
         setResizable(false);
+
+        GameWindow.setScreenWidth(Const.screenWidth);
+        GameWindow.setScreenHeight(Const.screenHeight);
     }
 }

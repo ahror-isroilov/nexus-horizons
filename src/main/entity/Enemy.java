@@ -2,6 +2,7 @@ package main.entity;
 
 import lombok.Getter;
 import main.GameWindow;
+import multiplayer.EnemyState;
 import utils.AudioUtils;
 
 import java.awt.*;
@@ -9,6 +10,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * author: ahror
@@ -21,7 +23,7 @@ public class Enemy extends Entity {
     private float maxSpeed;
     private float maxForce;
     private Random random;
-   @Getter private float size;
+    @Getter private float size;
     private int maxHealth;
     private float currentHealth;
     private boolean isDead;
@@ -31,14 +33,16 @@ public class Enemy extends Entity {
     private static final int HEALTH_BAR_DISPLAY_TIME = 850; // milliseconds
     private long lastDamageTime;
     private boolean isHealthBarVisible;
-    public Enemy() {
+
+    public Enemy(UUID id) {
+        super(id);
         this.velocity = new Point2D.Float(0, 0);
         this.maxSpeed = 2.5f;
         this.maxForce = 0.1f;
         this.random = new Random();
-        this.color = new Color(random.nextInt(150,255), random.nextInt(0,80), random.nextInt(0,100), 120);
+        this.color = new Color(random.nextInt(150, 255), random.nextInt(0, 80), random.nextInt(0, 100), 120);
         this.size = 20 + random.nextFloat() * 10; // Random size between 15 and 25
-        this.maxHealth = (int)(size * 4); // Health based on size
+        this.maxHealth = (int) (size * 4); // Health based on size
         this.currentHealth = maxHealth;
         this.isDead = false;
         this.explosionParticles = new ArrayList<>();
@@ -80,13 +84,13 @@ public class Enemy extends Entity {
     }
 
     private void drawWrappedInstances(Graphics2D g2d) {
-        if (position.x()> GameWindow.getScreenWidth() + size) {
+        if (position.x() > GameWindow.getScreenWidth() + size) {
             drawBallWithShadowAndEye(g2d, position.x() - GameWindow.getScreenWidth(), position.y(), color);
         }
         if (position.x() < 0) {
             drawBallWithShadowAndEye(g2d, position.x() + GameWindow.getScreenWidth(), position.y(), color);
         }
-        if (position.y()> GameWindow.getScreenHeight() + size) {
+        if (position.y() > GameWindow.getScreenHeight() + size) {
             drawBallWithShadowAndEye(g2d, position.x(), position.y() - GameWindow.getScreenHeight(), color);
         }
         if (position.y() < 0) {
@@ -95,24 +99,24 @@ public class Enemy extends Entity {
     }
 
     private void drawHealthBar(Graphics2D g2d) {
-        int barWidth = (int)size;
+        int barWidth = (int) size;
         int barHeight = 3;
-        int x = (int)(position.x() - size / 2);
-        int y = (int)(position.y() - size / 2 - 10);
+        int x = (int) (position.x() - size / 2);
+        int y = (int) (position.y() - size / 2 - 10);
 
         // Draw background
         g2d.setColor(Color.GRAY);
         g2d.fillRect(x, y, barWidth, barHeight);
 
         // Draw health
-        int healthWidth = (int)((float)currentHealth / maxHealth * barWidth);
+        int healthWidth = (int) ((float) currentHealth / maxHealth * barWidth);
         g2d.setColor(Color.RED);
         g2d.fillRect(x, y, healthWidth, barHeight);
 
         // Calculate and apply fade-out effect
         long timeSinceLastDamage = System.currentTimeMillis() - lastDamageTime;
         if (timeSinceLastDamage < HEALTH_BAR_DISPLAY_TIME) {
-            float alpha = 1f - (float)timeSinceLastDamage / HEALTH_BAR_DISPLAY_TIME;
+            float alpha = 1f - (float) timeSinceLastDamage / HEALTH_BAR_DISPLAY_TIME;
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         } else {
             isHealthBarVisible = false;
@@ -125,7 +129,7 @@ public class Enemy extends Entity {
             float alpha = 1 - (explosionTime / 1000f); // Fade out over 1 second
             if (alpha < 0) alpha = 0;
             g2d.setColor(new Color(1f, 0.5f, 0f, alpha));
-            g2d.fillOval((int)particle.x, (int)particle.y, 3, 3);
+            g2d.fillOval((int) particle.x, (int) particle.y, 3, 3);
         }
     }
 
@@ -147,10 +151,10 @@ public class Enemy extends Entity {
 
     private void initializeExplosion() {
         for (int i = 0; i < 50; i++) {
-            float angle = random.nextFloat() * 2 * (float)Math.PI;
+            float angle = random.nextFloat() * 2 * (float) Math.PI;
             float speed = random.nextFloat() * 2 + 1;
-            float x = position.x() + (float)Math.cos(angle) * speed;
-            float y = position.y() + (float)Math.sin(angle) * speed;
+            float x = position.x() + (float) Math.cos(angle) * speed;
+            float y = position.y() + (float) Math.sin(angle) * speed;
             explosionParticles.add(new Point2D.Float(x, y));
         }
         explosionTime = 0;
@@ -255,6 +259,38 @@ public class Enemy extends Entity {
 
     private float map(float value, float start1, float stop1, float start2, float stop2) {
         return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+    }
+
+    //multiplayer methods
+
+    public void updateFromEnemyState(EnemyState state) {
+        this.position.setCoordinates(state.getPosition().x(), state.getPosition().y());
+
+        this.currentHealth = state.getHealth();
+
+        this.isDead = state.isDead();
+        if (this.velocity != null && state.getVelocity() != null) {
+            this.velocity.setLocation(state.getVelocity().x, state.getVelocity().y);
+        }
+
+        this.target.setLocation(state.getTarget().x, state.getTarget().y);
+
+        this.explosionTime = state.getExplosionTime();
+        this.explosionParticles.clear();
+        this.explosionParticles.addAll(state.getExplosionParticles());
+    }
+
+    public EnemyState createState(){
+        return new EnemyState(
+                getId(),
+                position,
+                currentHealth,
+                isDead,
+                velocity,
+                target,
+                explosionTime,
+                explosionParticles
+        );
     }
 
 }

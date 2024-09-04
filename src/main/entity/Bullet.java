@@ -1,6 +1,7 @@
 package main.entity;
 
 import lombok.Getter;
+import multiplayer.BulletState;
 import utils.Position;
 
 import java.awt.*;
@@ -56,5 +57,9 @@ public class Bullet extends Entity {
 
     public boolean isOutOfBounds(int screenWidth, int screenHeight) {
         return position.x() < -LENGTH || position.x() > screenWidth + LENGTH || position.y() < -LENGTH || position.y() > screenHeight + LENGTH;
+    }
+
+    public BulletState createState() {
+        return new BulletState(position, new BulletState.Velocity(velocityX, velocityY));
     }
 }

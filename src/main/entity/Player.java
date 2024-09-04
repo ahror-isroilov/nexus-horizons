@@ -1,7 +1,10 @@
 package main.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import main.GameWindow;
+import multiplayer.BulletState;
+import multiplayer.PlayerState;
 import utils.AnimationUtils;
 import utils.AudioUtils;
 import utils.Const;
@@ -67,6 +70,9 @@ public class Player extends Entity implements PlayerMovement {
     @Getter private boolean laserActive = false;
     private BufferedImage shadowImage;
     private Graphics2D shadowGraphics;
+    @Getter
+    @Setter
+    private String name;
 
     public Player(float diameter, Color color, float mass) {
         super(new Position(), color);
@@ -553,5 +559,32 @@ public class Player extends Entity implements PlayerMovement {
         } else {
             return (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
         }
+    }
+
+    //multiplayer methods
+
+    public void updateFromPlayerState(PlayerState state) {
+        // Update position
+        this.position.setCoordinates(state.getPosition().x(), state.getPosition().y());
+        // Update bullets
+        this.currentBullets = state.getCurrentBullets();
+        this.bullets.clear();
+        for (BulletState bulletState : state.getBullets()) {
+            Bullet bullet = new Bullet((int) bulletState.getPosition().x(), (int) bulletState.getPosition().y(), bulletState.getVelocity().getX(), bulletState.getVelocity().getY());
+            this.bullets.add(bullet);
+        }
+
+        this.gravityEnabled = state.isGravityEnabled();
+        this.laserActive = state.isLaserActive();
+        this.velocity.setLocation(state.getVelocity().getX(), state.getVelocity().getY());
+        this.verticalVelocity = state.getVerticalVelocity();
+        this.isApproachingTarget = false;
+        this.targetPosition = null;
+        this.currentEyeDirection.setLocation(state.getCurrentEyeDirection().getX(), state.getCurrentEyeDirection().getY());
+        this.targetEyeDirection.setLocation(state.getTargetEyeDirection().getX(), state.getTargetEyeDirection().getY());
+    }
+
+    public PlayerState createState() {
+        return new PlayerState(position, currentBullets, isGravityEnabled(), isLaserActive(), currentEyeDirection, targetEyeDirection, velocity, verticalVelocity, bullets.stream().map(Bullet::createState).toList());
     }
 }
