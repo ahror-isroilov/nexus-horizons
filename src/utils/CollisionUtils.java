@@ -10,27 +10,6 @@ import main.entity.Enemy;
  */
 public final class CollisionUtils {
 
-    public static boolean checkCollision(Enemy enemy, Bullet bullet) {
-        float enemyCenterX = enemy.getPosition().x();
-        float enemyCenterY = enemy.getPosition().y();
-        float bulletCenterX = bullet.getPosition().x();
-        float bulletCenterY = bullet.getPosition().y();
-
-        // Calculate the distance between the centers
-        float distanceX = enemyCenterX - bulletCenterX;
-        float distanceY = enemyCenterY - bulletCenterY;
-        float distanceSquared = distanceX * distanceX + distanceY * distanceY;
-
-        // Use enemy radius plus half of bullet's length for collision check
-        float enemyRadius = enemy.getSize() / 2;
-        float bulletHalfLength = bullet.getLENGTH() / 2;
-        float collisionDistance = enemyRadius + bulletHalfLength;
-        float collisionDistanceSquared = collisionDistance * collisionDistance;
-
-        // Check if the distance is less than the collision distance
-        return distanceSquared <= collisionDistanceSquared;
-    }
-
     public static boolean checkSweptAABBCollision(Enemy enemy, Bullet bullet) {
         float bulletWidth = bullet.getWIDTH();
         float bulletHeight = bullet.getLENGTH();
@@ -80,7 +59,6 @@ public final class CollisionUtils {
         float exitTime = Math.min(xExit, yExit);
 
         // If there's no collision
-        // Collision detected
         return !(entryTime > exitTime) && (!(xEntry < 0.0f) || !(yEntry < 0.0f)) && !(xEntry > 1.0f) && !(yEntry > 1.0f);
     }
 

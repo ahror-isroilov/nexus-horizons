@@ -48,7 +48,7 @@ public class Game {
         mainPanel.add(homePanel, "Home");
         mainPanel.add(gamePanel, "Game");
 
-        gameWindow = new GameWindow("Bounce");
+        gameWindow = new GameWindow("Nexus Horizons");
         gameWindow.add(mainPanel, BorderLayout.CENTER);
         gameWindow.setVisible(true);
 

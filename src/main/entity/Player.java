@@ -261,7 +261,7 @@ public class Player extends Entity implements PlayerMovement {
         float eyeX = ballCenterX + currentEyeDirection.x * (diameter / 2);
         float eyeY = ballCenterY + currentEyeDirection.y * (diameter / 2);
 
-        g2d.setColor(new Color(0, 235, 255, 237));
+        g2d.setColor(new Color(0, 235, 255));
         g2d.fillOval((int) (eyeX - eyeSize / 2), (int) (eyeY - eyeSize / 2), (int) eyeSize, (int) eyeSize);
     }
 
