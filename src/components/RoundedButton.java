@@ -1,6 +1,5 @@
 package components;
 
-import lombok.Setter;
 import main.Game;
 import utils.AudioUtils;
 
@@ -13,9 +12,14 @@ import java.awt.geom.RoundRectangle2D;
 
 public class RoundedButton extends JButton {
     private boolean isHovered = false;
-    @Setter private Color hoverBackgroundColor = new Color(90, 90, 90);
-    @Setter private Color normalBackgroundColor = new Color(70, 70, 70);
+    private Color normalBackgroundColor = new Color(70, 70, 70);
+    private Color hoverBackgroundColor = new Color(90, 90, 90);
     private final int cornerRadius;
+
+    public void setNormalBackgroundColor(Color normalBackgroundColor) {
+        this.normalBackgroundColor = normalBackgroundColor;
+        this.hoverBackgroundColor = new Color(normalBackgroundColor.getRed() + 20, normalBackgroundColor.getGreen() + 20, normalBackgroundColor.getBlue() + 20, normalBackgroundColor.getAlpha());
+    }
 
     public RoundedButton(String text, int cornerRadius) {
         super(text);
@@ -58,11 +62,6 @@ public class RoundedButton extends JButton {
             public void mouseExited(MouseEvent e) {
                 isHovered = false;
                 repaint();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) AudioUtils.play("click.wav");
             }
         });
     }

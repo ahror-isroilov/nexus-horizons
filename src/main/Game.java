@@ -1,5 +1,6 @@
 package main;
 
+import components.GameEndDialog;
 import multiplayer.GameState;
 import multiplayer.NetworkHandler;
 import utils.AudioUtils;
@@ -177,6 +178,7 @@ public class Game {
                 cardLayout.show(mainPanel, "Home");
                 homePanel.setRequestFocusEnabled(true);
                 homePanel.requestFocus();
+                GameEndDialog.getInstance(gamePanel).dispose();
             }
         });
     }
