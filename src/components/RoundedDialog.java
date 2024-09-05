@@ -1,5 +1,7 @@
 package components;
 
+import lombok.Setter;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;

@@ -1,5 +1,6 @@
 package main;
 
+import components.GameEndDialog;
 import inputs.KeyboardInputs;
 import inputs.MouseInputs;
 import lombok.Getter;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+
+import static utils.Const.rand;
 
 /**
  * author: ahror
@@ -83,7 +86,7 @@ public class GamePanel extends JPanel {
 
         reloadAlertLabel = new JLabel("Press R to reload!");
         reloadAlertLabel.setFont(Game.UIFont.deriveFont(24f));
-        reloadAlertLabel.setForeground(new Color(223, 12, 12, 157));
+        reloadAlertLabel.setForeground(new Color(225, 45, 45, 157));
         reloadAlertLabel.setHorizontalAlignment(SwingConstants.CENTER);
         reloadAlertLabel.setVerticalAlignment(SwingConstants.CENTER);
         reloadAlertLabel.setOpaque(false);
@@ -107,8 +110,8 @@ public class GamePanel extends JPanel {
         spawnEnemies();
     }
 
-    private void spawnEnemies() {
-        if (enemies.isEmpty()) for (int i = 0; i < ENEMY_COUNT; i++) {
+    public void spawnEnemies() {
+        if (enemies.isEmpty()) for (int i = 0; i < rand.nextInt(30) + 1; i++) {
             enemies.add(new Enemy(UUID.randomUUID()));
         }
     }
@@ -129,6 +132,7 @@ public class GamePanel extends JPanel {
             gravityLabel.setForeground(player.isGravityEnabled() ? Color.WHITE : new Color(83, 78, 78));
             checkForReloadLabel();
             setCursor(player.isLaserActive() ? new Cursor(Cursor.CROSSHAIR_CURSOR) : new Cursor(Cursor.DEFAULT_CURSOR));
+            if (enemies.isEmpty()) GameEndDialog.getInstance(this).showDialog();
         }).start();
     }
 
@@ -221,9 +225,7 @@ public class GamePanel extends JPanel {
     }
 
     public GameState createGameState() {
-        return new GameState(player.createState(),
-                remotePlayer!=null?remotePlayer.createState():null,
-                enemies.stream().map(Enemy::createState).toList());
+        return new GameState(player.createState(), remotePlayer != null ? remotePlayer.createState() : null, enemies.stream().map(Enemy::createState).toList());
     }
 
     @Override

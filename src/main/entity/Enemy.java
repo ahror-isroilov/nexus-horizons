@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import static utils.Const.rand;
+
 /**
  * author: ahror
  * <p>
@@ -41,7 +43,7 @@ public class Enemy extends Entity {
         this.maxForce = 0.1f;
         this.random = new Random();
         this.color = new Color(random.nextInt(150, 255), random.nextInt(0, 80), random.nextInt(0, 100), 120);
-        this.size = 20 + random.nextFloat() * 10; // Random size between 15 and 25
+        this.size =  rand.nextInt(30)+5; // Random size between 15 and 25
         this.maxHealth = (int) (size * 4); // Health based on size
         this.currentHealth = maxHealth;
         this.isDead = false;
@@ -100,7 +102,7 @@ public class Enemy extends Entity {
 
     private void drawHealthBar(Graphics2D g2d) {
         int barWidth = (int) size;
-        int barHeight = 3;
+        int barHeight = 2;
         int x = (int) (position.x() - size / 2);
         int y = (int) (position.y() - size / 2 - 10);
 
@@ -109,7 +111,7 @@ public class Enemy extends Entity {
         g2d.fillRect(x, y, barWidth, barHeight);
 
         // Draw health
-        int healthWidth = (int) ((float) currentHealth / maxHealth * barWidth);
+        int healthWidth = (int) (currentHealth / maxHealth * barWidth);
         g2d.setColor(Color.RED);
         g2d.fillRect(x, y, healthWidth, barHeight);
 
