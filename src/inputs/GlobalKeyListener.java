@@ -19,8 +19,8 @@ public class GlobalKeyListener implements KeyEventDispatcher {
     }
 
     private void handleKeyPress(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_Q) Game.getInstance().showHomePanel();
-        if (e.getKeyCode() == KeyEvent.VK_P) ShowPlanets.getInstance().showDialog();
+        if (e.getKeyCode() == KeyEvent.VK_Q) Game.gameWindow.showHomePanel();
+
     }
 
 }

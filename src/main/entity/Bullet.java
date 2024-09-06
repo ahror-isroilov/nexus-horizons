@@ -11,14 +11,18 @@ import java.awt.*;
  * <p>
  * since: 9/2/24
  */
+@Getter
 public class Bullet extends Entity {
-    @Getter private float velocityX, velocityY;
-    @Getter private final float LENGTH = 20.0f;
-    @Getter private final float WIDTH = 1.5f;
-    private final float DRAG_COEFFICIENT = 0.99f;
-    @Getter private final float DAMAGE = 25.0f;
-    @Getter private boolean isFired = false;
-    @Getter private Position previousPosition;
+    private float velocityX, velocityY;
+    private final float LENGTH = 10.0f;
+    private final float WIDTH = 1.0f;
+    private final float DAMAGE = 15.0f;
+
+    public static final float BULLET_SPEED = 180.0f;
+    public static final float BULLET_SPREAD = 0.025f;
+
+    private boolean isFired = false;
+    private Position previousPosition;
 
     public Bullet(int x, int y, float velocityX, float velocityY) {
         super(new Position(x, y), Color.GREEN);
@@ -30,6 +34,8 @@ public class Bullet extends Entity {
         this.previousPosition = new Position(position.x(), position.y());
         position.incX(velocityX);
         position.incY(velocityY);
+
+        float DRAG_COEFFICIENT = 0.99f;
         velocityX *= DRAG_COEFFICIENT;
         velocityY *= DRAG_COEFFICIENT;
     }

@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import static utils.Const.rand;
@@ -22,14 +21,13 @@ import static utils.Const.rand;
 public class Enemy extends Entity {
     private Point2D.Float target;
     private Point2D.Float velocity;
-    private float maxSpeed;
-    private float maxForce;
-    private Random random;
-    @Getter private float size;
-    private int maxHealth;
+    private final float maxSpeed;
+    private final float maxForce;
+    @Getter private final float size;
+    private final int maxHealth;
     private float currentHealth;
     private boolean isDead;
-    private List<Point2D.Float> explosionParticles;
+    private final List<Point2D.Float> explosionParticles;
     private float explosionTime;
 
     private static final int HEALTH_BAR_DISPLAY_TIME = 850; // milliseconds
@@ -41,9 +39,8 @@ public class Enemy extends Entity {
         this.velocity = new Point2D.Float(0, 0);
         this.maxSpeed = 2.5f;
         this.maxForce = 0.1f;
-        this.random = new Random();
-        this.color = new Color(random.nextInt(150, 255), random.nextInt(0, 80), random.nextInt(0, 100), 120);
-        this.size =  rand.nextInt(30)+5; // Random size between 15 and 25
+        this.color = new Color(rand.nextInt(150, 255), rand.nextInt(0, 80), rand.nextInt(0, 100), 120);
+        this.size = rand.nextInt(30) + 5; // Random size between 15 and 25
         this.maxHealth = (int) (size * 4); // Health based on size
         this.currentHealth = maxHealth;
         this.isDead = false;
@@ -153,8 +150,8 @@ public class Enemy extends Entity {
 
     private void initializeExplosion() {
         for (int i = 0; i < 50; i++) {
-            float angle = random.nextFloat() * 2 * (float) Math.PI;
-            float speed = random.nextFloat() * 2 + 1;
+            float angle = rand.nextFloat() * 2 * (float) Math.PI;
+            float speed = rand.nextFloat() * 2 + 1;
             float x = position.x() + (float) Math.cos(angle) * speed;
             float y = position.y() + (float) Math.sin(angle) * speed;
             explosionParticles.add(new Point2D.Float(x, y));
@@ -179,8 +176,8 @@ public class Enemy extends Entity {
             explosionParticles.clear();
         } else {
             for (Point2D.Float particle : explosionParticles) {
-                particle.x += (random.nextFloat() - 0.5f) * 2;
-                particle.y += (random.nextFloat() - 0.5f) * 2;
+                particle.x += (rand.nextFloat() - 0.5f) * 2;
+                particle.y += (rand.nextFloat() - 0.5f) * 2;
             }
         }
     }
@@ -190,8 +187,8 @@ public class Enemy extends Entity {
     }
 
     private void setNewTarget() {
-        float targetX = random.nextFloat() * GameWindow.getScreenWidth();
-        float targetY = random.nextFloat() * GameWindow.getScreenHeight();
+        float targetX = rand.nextFloat() * GameWindow.getScreenWidth();
+        float targetY = rand.nextFloat() * GameWindow.getScreenHeight();
         this.target = new Point2D.Float(targetX, targetY);
     }
 
@@ -245,8 +242,8 @@ public class Enemy extends Entity {
 
     private void addNaturalVariation() {
         // Add small random variations to velocity
-        velocity.x += (random.nextFloat() - 0.5f) * 0.2f;
-        velocity.y += (random.nextFloat() - 0.5f) * 0.2f;
+        velocity.x += (rand.nextFloat() - 0.5f) * 0.2f;
+        velocity.y += (rand.nextFloat() - 0.5f) * 0.2f;
     }
 
     private Point2D.Float limit(Point2D.Float vector, float max) {
@@ -282,17 +279,8 @@ public class Enemy extends Entity {
         this.explosionParticles.addAll(state.getExplosionParticles());
     }
 
-    public EnemyState createState(){
-        return new EnemyState(
-                getId(),
-                position,
-                currentHealth,
-                isDead,
-                velocity,
-                target,
-                explosionTime,
-                explosionParticles
-        );
+    public EnemyState createState() {
+        return new EnemyState(getId(), position, currentHealth, isDead, velocity, target, explosionTime, explosionParticles);
     }
 
 }

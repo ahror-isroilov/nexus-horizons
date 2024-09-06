@@ -1,6 +1,7 @@
 package main;
 
 import components.GameEndDialog;
+import components.ShowPlanets;
 import inputs.KeyboardInputs;
 import inputs.MouseInputs;
 import lombok.Getter;
@@ -18,6 +19,7 @@ import utils.Planets;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,25 +33,17 @@ import static utils.Const.rand;
  * since: 8/29/24
  */
 @Getter
-public class GamePanel extends JPanel {
+public class GamePanel extends JPanel implements GamePanelInputListener {
     private Player player;
-    private Player remotePlayer;
     private final List<Enemy> enemies = new ArrayList<>();
 
-    private JLabel bulletCount;
+    private JLabel bulletCountLabel;
     private JLabel gravityLabel;
     private JLabel reloadAlertLabel;
     private float alertOpacity = 0.0f;
     private boolean fadeIn = true;
 
-    private ImageIcon planetIcon;
-    private ImageIcon bulletIcon;
-
-    private static final int ENEMY_COUNT = 10;
-    private static final int TIMER_DELAY = 32;
-
-    private boolean isMultiplayer;
-    @Setter private boolean isHost;
+    private static final int TIMER_DELAY = 16;
 
     public GamePanel() {
         initializePanelProperties();
@@ -67,32 +61,25 @@ public class GamePanel extends JPanel {
     }
 
     private void initializeSounds() {
-        AudioUtils.preloadSound("shoot.wav", player.getMaxBullets());
-        AudioUtils.preloadSound("die.wav", enemies.size());
+        AudioUtils.preloadSound("shoot.wav", 10);
+        AudioUtils.preloadSound("die.wav", 5);
     }
 
     private void createUIComponents() {
-        planetIcon = new ImageIcon("images/planet.png");
-        bulletIcon = new ImageIcon("images/bullet.png");
-        planetIcon = new ImageIcon(planetIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-        bulletIcon = new ImageIcon(bulletIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-
-        bulletCount = createLabel("0", 0, 10, 0, 10);
+        bulletCountLabel = createLabel("0", 0, 10, 0, 10);
         gravityLabel = createLabel("Gravity: ", 10, 10, 10, 10);
-        bulletCount.setIcon(bulletIcon);
-        gravityLabel.setIcon(planetIcon);
-        bulletCount.setHorizontalTextPosition(JLabel.RIGHT);
+        bulletCountLabel.setHorizontalTextPosition(JLabel.RIGHT);
         gravityLabel.setHorizontalTextPosition(JLabel.RIGHT);
 
         reloadAlertLabel = new JLabel("Press R to reload!");
         reloadAlertLabel.setFont(Game.UIFont.deriveFont(24f));
-        reloadAlertLabel.setForeground(new Color(225, 45, 45, 157));
+        reloadAlertLabel.setForeground(new Color(225, 45, 45, 87));
         reloadAlertLabel.setHorizontalAlignment(SwingConstants.CENTER);
         reloadAlertLabel.setVerticalAlignment(SwingConstants.CENTER);
         reloadAlertLabel.setOpaque(false);
         add(reloadAlertLabel);
         add(gravityLabel);
-        add(bulletCount);
+        add(bulletCountLabel);
     }
 
     private JLabel createLabel(String text, int top, int left, int bottom, int right) {
@@ -125,10 +112,8 @@ public class GamePanel extends JPanel {
 
     private void updateUIElements() {
         new Timer(TIMER_DELAY, e -> {
-            bulletCount.setText(String.format("⚡: %d", player.getCurrentBullets()));
-            bulletCount.setIcon(bulletIcon);
+            bulletCountLabel.setText(String.format("⚡: %d", player.getCurrentBullets()));
             gravityLabel.setText(String.format("🪐: %s", Planets.getCurrentPlanet()));
-            gravityLabel.setIcon(planetIcon);
             gravityLabel.setForeground(player.isGravityEnabled() ? Color.WHITE : new Color(83, 78, 78));
             checkForReloadLabel();
             setCursor(player.isLaserActive() ? new Cursor(Cursor.CROSSHAIR_CURSOR) : new Cursor(Cursor.DEFAULT_CURSOR));
@@ -155,49 +140,13 @@ public class GamePanel extends JPanel {
         reloadAlertLabel.setForeground(new Color(1f, 0f, 0f, Math.max(0.0f, Math.min(1.0f, alertOpacity))));
     }
 
-    //multiplayer methods
-
-    public void setMultiplayerMode(boolean isMultiplayer, boolean isHost) {
-        this.isMultiplayer = isMultiplayer;
-        this.isHost = isHost;
-        if (isMultiplayer) {
-            remotePlayer = new Player(Const.diameter, Color.RED, 2); // Different color for remote player
-        }
-    }
-
-    public void updateFromGameState(GameState state) {
-        if (isHost) {
-            remotePlayer.updateFromPlayerState(state.getPlayer2());
-        } else {
-            remotePlayer.updateFromPlayerState(state.getPlayer1());
-            player.updateFromPlayerState(state.getPlayer2());
-        }
-        updateEnemiesFromState(state.getEnemies());
-    }
-
-    private void updateEnemiesFromState(List<EnemyState> enemyStates) {
-        enemies.removeIf(enemy -> enemyStates.stream().noneMatch(state -> state.getId() == enemy.getId()));
-
-        for (EnemyState state : enemyStates) {
-            Enemy enemy = enemies.stream().filter(e -> e.getId() == state.getId()).findFirst().orElseGet(() -> {
-                Enemy newEnemy = new Enemy(state.getId());
-                enemies.add(newEnemy);
-                return newEnemy;
-            });
-
-            enemy.updateFromEnemyState(state);
-        }
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         player.spawn(g);
-//        if (isMultiplayer) remotePlayer.spawn(g);
         enemies.forEach(e -> e.spawn(g));
         Iterator<Enemy> enemyIterator = enemies.iterator();
         handleBulletCollisions(g, enemyIterator, player);
-//        if (isMultiplayer) handleBulletCollisions(g, enemyIterator, remotePlayer);
         reloadAlertLabel.setBounds((getWidth() - 400) / 2, getHeight() / 4, 400, 50);
     }
 
@@ -211,26 +160,26 @@ public class GamePanel extends JPanel {
                 continue;
             }
 
-            // Check bullet collisions
             Iterator<Bullet> bulletIterator = player.getBullets().iterator();
             while (bulletIterator.hasNext()) {
                 Bullet bullet = bulletIterator.next();
                 if (CollisionUtils.checkSweptAABBCollision(enemy, bullet)) {
                     enemy.takeDamage(bullet.getDAMAGE());
                     bulletIterator.remove();
-                    break;  // Break after collision to avoid multiple hits from same bullet
+                    break;
                 }
             }
         }
-    }
-
-    public GameState createGameState() {
-        return new GameState(player.createState(), remotePlayer != null ? remotePlayer.createState() : null, enemies.stream().map(Enemy::createState).toList());
     }
 
     @Override
     public void requestFocus() {
         spawnEnemies();
         super.requestFocus();
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_P) ShowPlanets.getInstance().showDialog();
     }
 }

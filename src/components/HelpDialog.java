@@ -34,7 +34,6 @@ public class HelpDialog extends RoundedDialog {
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
         textPane.setFont(Game.UIFont.deriveFont(12f));
         textPane.setText("""
-                
                 - Press the `P` key to select planet
                 
                 - Press the `G` key to enable/disable gravity
@@ -46,7 +45,7 @@ public class HelpDialog extends RoundedDialog {
                 
                 Ahror Isroilov | 01.09.2024
                 """);
-        textPane.setBorder(new EmptyBorder(20, 0, 0, 0));
+        textPane.setBorder(new EmptyBorder(50, 0, 0, 0));
         mainPanel.add(textPane, BorderLayout.CENTER);
 
         RoundedButton ok = new RoundedButton("Ok", 15);
