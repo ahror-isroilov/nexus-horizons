@@ -25,6 +25,7 @@ public class KeyboardInputs implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         gPanel.getPlayer().keyPressed(e);
+        gPanel.keyPressed(e);
     }
 
     @Override

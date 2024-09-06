@@ -35,9 +35,8 @@ public class Player extends Entity implements PlayerMovement {
     private static final float ACCELERATION = 0.4f;
     private static final float DECELERATION = 0.0000001f;
     private static final float APPROACH_SPEED = 0.2f;
-    private static final float BULLET_SPEED = 90.0f;
-    private static final float BULLET_SPREAD = 0.025f; // Angle in radians
-    private static final int FLASH_DURATION = 100; // milliseconds
+     // Angle in radians
+    private static final int FLASH_DURATION = 80; // milliseconds
 
     @Getter private final Float diameter;
     @Getter private final float mass;
@@ -45,11 +44,11 @@ public class Player extends Entity implements PlayerMovement {
 
     private long flashStartTime;
     private boolean isFlashing;
-    @Getter private List<Bullet> bullets;
-    @Getter private int maxBullets = 50;
+    @Getter private final List<Bullet> bullets;
+    @Getter private final int maxBullets = 150;
     @Getter private int currentBullets;
     private long lastFireTime;
-    private static final long FIRE_COOLDOWN = 100; // milliseconds
+    private static final long FIRE_COOLDOWN = 30; // milliseconds
     private boolean isFiring = false;
 
     private Point2D.Float velocity;
@@ -386,15 +385,15 @@ public class Player extends Entity implements PlayerMovement {
             }
 
             // Add slight randomness to bullet direction
-            float angle = (Const.rand.nextFloat() - 0.5f) * BULLET_SPREAD;
+            float angle = (Const.rand.nextFloat() - 0.5f) * Bullet.BULLET_SPREAD;
             float cos = (float) Math.cos(angle);
             float sin = (float) Math.sin(angle);
             float newDirX = dirX * cos - dirY * sin;
             float newDirY = dirX * sin + dirY * cos;
 
             // Set bullet velocity
-            float bulletVelocityX = newDirX * BULLET_SPEED;
-            float bulletVelocityY = newDirY * BULLET_SPEED;
+            float bulletVelocityX = newDirX * Bullet.BULLET_SPEED;
+            float bulletVelocityY = newDirY * Bullet.BULLET_SPEED;
 
             Bullet bullet = new Bullet((int) bulletX, (int) bulletY, bulletVelocityX, bulletVelocityY);
             bullets.add(bullet);
