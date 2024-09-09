@@ -40,6 +40,14 @@
                 <version>3.6.0</version>
 
                 <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>
+                                main.MainClass
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
@@ -54,7 +62,6 @@
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
         </plugins>
         <sourceDirectory>src</sourceDirectory>
